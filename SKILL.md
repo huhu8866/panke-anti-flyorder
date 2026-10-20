@@ -1,49 +1,52 @@
+# Lead Attribution & Anti-Fly-Order Assistant (Real Estate)
+
+> English version. Package with `scripts/panke.py`, `references/`, `tests/`.
+
 ---
 name: panke-anti-flyorder
-display_name: 案场判客防飞单助手
-display_name_en: Lead Attribution & Anti-Fly-Order Assistant
-description: 房地产案场客户归属判定与飞单风险识别。当用户提供客户到访记录、渠道报备、带看记录、成交线索，或询问"这客户算谁的""是不是飞单""撞客怎么判""佣金该归谁"时使用。
-description_zh: 案场判客、客户归属判定、撞客仲裁、飞单风险识别与拦截建议
-description_en: Real-estate lead attribution, collision arbitration and fly-order risk detection with action recommendations
+display_name: Lead Attribution & Anti-Fly-Order Assistant
+description: Real-estate sales-floor lead attribution and fly-order (commission-diversion) risk detection. Use when the user provides visit records, channel registrations, accompanied-viewing logs, or closed-deal details, or asks "whose client is this", "is this a fly order", "who gets the commission", or "arbitrate this collision".
 category: real-estate
 version: 1.1.0
-author: 陈建湖
+author: Chen Jianhu
 allowed-tools: Read, Write, Bash
 ---
 
-# 案场判客防飞单助手
+# Lead Attribution & Anti-Fly-Order Assistant
 
-## 触发场景
-- 两个销售争同一组客户，需要判定归属
-- 客户成交后，质疑"这单是不是被飞了"
-- 渠道报备与自然到访冲突，需要仲裁
-- 需要批量体检案场线索，输出风险名单
+## Triggers
+- Two agents claim the same client
+- A closed deal is suspected of being diverted
+- Channel registration conflicts with a walk-in visit
+- Batch audit of sales-floor leads for a risk list
 
-## 输入（缺项先追问，不要臆测）
-| 字段 | 说明 | 必填 |
+## Inputs (ask, never assume)
+| Field | Purpose | Required |
 |---|---|---|
-| 客户姓名/手机号/身份证 | 用于身份归一 | 是 |
-| 首次到访时间 + 接待销售 | 首访归属依据 | 是 |
-| 渠道报备记录 | 报备人、报备时间、是否审核通过 | 否 |
-| 复访记录 | 时间、接待人、跟进动作 | 否 |
-| 成交信息 | 成交时间、房源、签约人、收款方 | 否 |
-| 关联人信息 | 配偶/父母子女/同住人 | 否 |
+| Client name / phone / ID | identity normalization | yes |
+| First visit time + receiving agent | first-visit ownership | yes |
+| Channel registration | registrant, time, approved? | no |
+| Re-visit records | time, receiving agent, follow-up action | no |
+| Deal info | close date, unit, signer, payee | no |
+| Related parties | spouse / parents / children / co-residents | no |
 
-## 判定流程
-1. **身份归一**：手机号、身份证、关联人组视为同一客户；命中关联人按首次登记时间取归属。
-2. **归属判定**（优先级从高到低）：
-   有效报备 → 首访接待 → 保护期内复访承接 → 超期释放为公客。
-3. **飞单风险扫描**：逐条比对 F1–F7 风险规则（见 references/rules.md），命中即计分。
-4. **输出结论**：归属人 + 风险等级（高/中/低）+ 证据链 + 处置建议。
+## Decision flow
+1. **Identity normalization**: same phone, same ID, or related-party group = one client; related-party hits take the **earliest registration** record.
+2. **Ownership priority**: valid registration → first-visit agent → within-protection re-visit → released to public pool.
+3. **Fly-order scan**: check F1–F7 rules (see `references/rules.md`), score each hit.
+4. **Verdict**: owner + risk level (high/medium/low) + evidence chain + recommended action.
 
-## 输出格式（固定四段，表格优先）
-1. **判定结论**：客户归属 / 保护期剩余天数
-2. **风险清单**：命中规则编号 + 事实依据 + 权重
-3. **证据链**：按时间轴列出关键记录
-4. **处置建议**：冻结佣金 / 要求补报备 / 提交仲裁 / 上报风控
+## Output format (fixed four sections, tables preferred)
+1. **Verdict** — owner / remaining protection days
+2. **Risk list** — rule id, type, factual basis, weight
+3. **Evidence chain** — chronological, with responsible person
+4. **Recommended action** — freeze commission / request retro-registration / submit for arbitration / escalate to risk control
 
-## 硬性约束
-- 只依据用户提供的事实判定，证据不足时明确写"证据不足，建议人工复核"，禁止编造记录。
-- 保护期、报备有效期等参数默认见 scripts/panke.py 顶部的 RULES，可按公司制度调整；规则口径详见 references/rules.md。
-- 涉及佣金冻结、处罚等动作，只给建议，不替代公司制度与法律判断。
-- 输入字段不合法（日期格式错、类型非法、缺接待人）时先返回错误清单，禁止在脏数据上给出归属结论。
+## Hard constraints
+- Judge only on user-provided facts. If evidence is insufficient, write "insufficient evidence — manual review required". **Never fabricate records.**
+- Thresholds (protection days, registration validity) live at the top of `scripts/panke.py` under `RULES` and are configurable per company policy.
+- Actions like commission freezes or penalties are **recommendations only**; they do not replace company policy or legal judgment.
+- On invalid input (bad date format, missing agent), return an error list first — never produce an ownership verdict on dirty data.
+
+## Pricing
+List at **$1 per arbitration/report** (or accept the marketplace's creator reward points). Enterprise SaaS / per-project customization is a separate higher-tier offer.
