@@ -1,0 +1,9 @@
+{
+  "today": "2026-10-20",
+  "records": [
+    {"type": "report", "date": "2026-10-01", "sales": "李四", "approved": true, "channel": "channel"},
+    {"type": "visit", "date": "2026-10-02", "sales": "张三", "channel": "natural", "project": "项目A"},
+    {"type": "visit", "date": "2026-10-10", "sales": "张三", "channel": "natural", "project": "项目B"},
+    {"type": "deal", "date": "2026-10-12", "sales": "张三", "offsystem": false}
+  ]
+}

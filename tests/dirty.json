@@ -1,0 +1,7 @@
+{
+  "today": "2026-10-20",
+  "records": [
+    {"type": "visitt", "date": "2026/10/01", "sales": ""},
+    {"type": "deal", "date": "20261005", "sales": "张三"}
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "cases": [
+    {
+      "id": "A_normal_first_visit",
+      "desc": "无报备、首访30天内 → 首访归属",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "visit", "date": "2026-10-10", "sales": "张三", "channel": "natural"}
+      ],
+      "expect": {"owner": "张三", "basis": "first_visit", "level": "低", "hits": []}
+    },
+    {
+      "id": "B_report_priority",
+      "desc": "有效报备先于首访 → 报备人归属，无成交不得误报F2",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "report", "date": "2026-10-01", "sales": "李四", "approved": true, "channel": "internal"},
+        {"type": "visit", "date": "2026-10-05", "sales": "张三", "channel": "natural"}
+      ],
+      "expect": {"owner": "李四", "basis": "report", "level": "低", "hits": []}
+    },
+    {
+      "id": "C_report_expired",
+      "desc": "报备超7天失效 → 首访归属",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "report", "date": "2026-09-01", "sales": "李四", "approved": true, "channel": "internal"},
+        {"type": "visit", "date": "2026-10-10", "sales": "张三", "channel": "natural"}
+      ],
+      "expect": {"owner": "张三", "basis": "first_visit", "level": "低", "hits": []}
+    },
+    {
+      "id": "D_no_report_deal",
+      "desc": "无报备成交 → F1 高风险",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "visit", "date": "2026-10-01", "sales": "张三", "channel": "natural"},
+        {"type": "deal", "date": "2026-10-05", "sales": "张三"}
+      ],
+      "expect": {"owner": "张三", "basis": "first_visit", "level": "高", "hits": ["F1"]}
+    },
+    {
+      "id": "E_channel_conflict",
+      "desc": "渠道报备后自然客成交 → F2 高风险",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "report", "date": "2026-10-01", "sales": "王五", "approved": true, "channel": "channel"},
+        {"type": "visit", "date": "2026-10-02", "sales": "张三", "channel": "natural"},
+        {"type": "deal", "date": "2026-10-05", "sales": "张三"}
+      ],
+      "expect": {"owner": "王五", "basis": "report", "level": "高", "hits": ["F2"]}
+    },
+    {
+      "id": "F_related_person",
+      "desc": "关联人登记 → F4 高风险",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "visit", "date": "2026-10-01", "sales": "张三", "channel": "natural", "related": true}
+      ],
+      "expect": {"owner": "张三", "basis": "first_visit", "level": "高", "hits": ["F4"]}
+    },
+    {
+      "id": "G_empty_records",
+      "desc": "空记录 → 证据不足、待复核",
+      "today": "2026-10-20",
+      "records": [],
+      "expect": {"owner": null, "basis": "insufficient", "level": "待复核", "hits": []}
+    },
+    {
+      "id": "H_protect_expired",
+      "desc": "首访超30天 → 释放公客（owner 为空）",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "visit", "date": "2026-08-01", "sales": "张三", "channel": "natural"}
+      ],
+      "expect": {"owner": null, "basis": "expired", "level": "低", "hits": []}
+    },
+    {
+      "id": "I_report_only",
+      "desc": "只有报备无到访 → 不得崩溃，报备人归属",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "report", "date": "2026-10-01", "sales": "李四", "approved": true, "channel": "internal"}
+      ],
+      "expect": {"owner": "李四", "basis": "report", "level": "低", "hits": []}
+    },
+    {
+      "id": "J_id_mismatch",
+      "desc": "报备身份不一致 → F5 高风险",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "report", "date": "2026-10-01", "sales": "李四", "approved": true, "channel": "internal", "id_mismatch": true},
+        {"type": "visit", "date": "2026-10-02", "sales": "李四", "channel": "natural"}
+      ],
+      "expect": {"owner": "李四", "basis": "report", "level": "高", "hits": ["F5"]}
+    },
+    {
+      "id": "K_poach_in_protect",
+      "desc": "保护期内他人成交 → F7 中风险",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "report", "date": "2026-10-01", "sales": "张三", "approved": true, "channel": "internal"},
+        {"type": "visit", "date": "2026-10-01", "sales": "张三", "channel": "natural"},
+        {"type": "visit", "date": "2026-10-10", "sales": "李四", "channel": "natural"},
+        {"type": "deal", "date": "2026-10-12", "sales": "李四"}
+      ],
+      "expect": {"owner": "张三", "basis": "report", "level": "中", "hits": ["F7"]}
+    },
+    {
+      "id": "L_offsystem_deal",
+      "desc": "体外成交 → F6 高风险",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "visit", "date": "2026-10-01", "sales": "张三", "channel": "natural"},
+        {"type": "deal", "date": "2026-10-05", "sales": "张三", "offsystem": true}
+      ],
+      "expect": {"owner": "张三", "basis": "first_visit", "level": "高", "hits": ["F1", "F6"]}
+    },
+    {
+      "id": "M_cross_project",
+      "desc": "同一客户跨项目登记 → F3 中风险",
+      "today": "2026-10-20",
+      "records": [
+        {"type": "visit", "date": "2026-10-01", "sales": "张三", "channel": "natural", "project": "项目A"},
+        {"type": "visit", "date": "2026-10-05", "sales": "张三", "channel": "natural", "project": "项目B"}
+      ],
+      "expect": {"owner": "张三", "basis": "first_visit", "level": "中", "hits": ["F3"]}
+    }
+  ]
+}
